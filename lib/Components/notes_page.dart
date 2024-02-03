@@ -43,14 +43,15 @@ class _NotesPageState extends State<NotesPage> {
   }
 
   void _showNoteDialog(String title, Function(String, String) onSave) {
+    if (title == 'New Note') {
+      _titleController.clear();
+      _contentController.clear();
+    }
     showDialog(
       context: context,
       builder: (context) {
         return Dialog(
-          child: Container(
-            constraints: BoxConstraints(
-                minHeight: 200.0,
-                maxWidth: MediaQuery.of(context).size.width * 0.5),
+          child: SizedBox(
             width: MediaQuery.of(context).size.width * 0.8,
             height: MediaQuery.of(context).size.height * 0.5,
             child: AlertDialog(
@@ -76,7 +77,7 @@ class _NotesPageState extends State<NotesPage> {
                 ),
               ),
               actions: <Widget>[
-                TextButton(
+                ElevatedButton(
                   child: const Text('Save'),
                   onPressed: () {
                     String title = _titleController.text;
