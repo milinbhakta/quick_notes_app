@@ -102,7 +102,7 @@ class _NotesPageState extends State<NotesPage> {
         NoteProvider.instance.addNote(Note(
             title: title,
             content: content,
-            timestamp: DateTime.now())); // Use NoteProvider to add note
+            timestamp: DateTime.now())); 
       });
     });
   }
