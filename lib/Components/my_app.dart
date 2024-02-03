@@ -26,6 +26,7 @@ class _MyAppState extends State<MyApp> {
       themeMode: _themeMode,
       theme: ThemeData.light(useMaterial3: true),
       darkTheme: ThemeData.dark(useMaterial3: true),
+      debugShowCheckedModeBanner: false,
       home: MyHomePage(
           title: 'Quick Notes App',
           changeTheme: _changeTheme,

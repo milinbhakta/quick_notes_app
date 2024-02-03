@@ -1,70 +1,45 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:quick_notes_app/Util/note_class.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quick_notes_app/Util/note_class.dart'; // Import NoteProvider
 import 'package:intl/intl.dart';
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _NotesPageState createState() => _NotesPageState();
 }
 
 class _NotesPageState extends State<NotesPage> {
-  List<Note> _notes = [];
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-
-  Future<void> _loadNotes() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _notes = (prefs.getStringList('notes') ?? [])
-          .map((note) {
-            final noteData = jsonDecode(note) as Map<String, dynamic>;
-            return Note(
-              title: noteData['title'],
-              content: noteData['content'],
-              timestamp: DateTime.parse(noteData['timestamp']),
-            );
-          })
-          .toList()
-          .cast<Note>();
-    });
-  }
-
-  Future<void> _saveNotes() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setStringList(
-        'notes',
-        _notes.map((note) {
-          return jsonEncode({
-            'title': note.title,
-            'content': note.content,
-            'timestamp': note.timestamp.toIso8601String(),
-          });
-        }).toList());
-  }
-
-  void _deleteNote(int index) {
-    setState(() {
-      _notes.removeAt(index);
-      _saveNotes();
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadNotes();
-  }
+  String _searchQuery = '';
+  List<Note> _filteredNotes = [];
 
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeNotes();
+  }
+
+  void _initializeNotes() async {
+    await NoteProvider.instance.loadNotes();
+    setState(() {
+      _filteredNotes = NoteProvider.instance.notes;
+    });
+  }
+
+  void _updateSearchQuery(String newQuery) {
+    setState(() {
+      _searchQuery = newQuery;
+      _filteredNotes = NoteProvider.instance.filterNotes(_searchQuery);
+    });
   }
 
   void _showNoteDialog(String title, Function(String, String) onSave) {
@@ -123,62 +98,102 @@ class _NotesPageState extends State<NotesPage> {
   void _addNote() {
     _showNoteDialog('New Note', (String title, String content) {
       setState(() {
-        _notes.add(
-            Note(title: title, content: content, timestamp: DateTime.now()));
-        _saveNotes();
+        NoteProvider.instance.addNote(Note(
+            title: title,
+            content: content,
+            timestamp: DateTime.now())); // Use NoteProvider to add note
       });
     });
   }
 
   void _updateNote(int index) {
-    _titleController.text = _notes[index].title;
-    _contentController.text = _notes[index].content;
+    _titleController.text = NoteProvider
+        .instance.notes[index].title; // Use NoteProvider to get note
+    _contentController.text = NoteProvider
+        .instance.notes[index].content; // Use NoteProvider to get note
 
     _showNoteDialog('Update Note', (String title, String content) {
       setState(() {
-        _notes[index] =
-            Note(title: title, content: content, timestamp: DateTime.now());
-        _saveNotes();
+        NoteProvider.instance.updateNote(
+            index,
+            Note(
+                title: title,
+                content: content,
+                timestamp: DateTime.now())); // Use NoteProvider to update note
       });
+    });
+  }
+
+  void _deleteNote(int index) {
+    setState(() {
+      NoteProvider.instance
+          .removeNote(index); // Use NoteProvider to delete note
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView.builder(
-        itemCount: _notes.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(_notes[index].title),
-            subtitle: Text(_notes[index].content),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Container(
-                  margin: const EdgeInsets.only(
-                      right: 10.0), // Adjust the value as needed
-                  child: Text(
-                    'Last updated: ${DateFormat('yyyy-MM-dd – kk:mm').format(_notes[index].timestamp)}',
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () => _updateNote(index),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () => _deleteNote(index),
-                ),
-              ],
+      body: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              onChanged: _updateSearchQuery,
+              decoration: const InputDecoration(
+                hintText: "Search",
+                prefixIcon: Icon(Icons.search),
+              ),
             ),
-          );
-        },
+          ),
+          Expanded(
+              child: FutureBuilder(
+            future: NoteProvider.instance.loadNotes(),
+            builder: (BuildContext context, AsyncSnapshot snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else {
+                return ListView.builder(
+                  itemCount: _filteredNotes.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(_filteredNotes[index].title),
+                      subtitle: Text(_filteredNotes[index].content),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Container(
+                            margin: const EdgeInsets.only(right: 10.0),
+                            child: Text(
+                              'Last updated: ${DateFormat('yyyy-MM-dd – kk:mm').format(_filteredNotes[index].timestamp)}',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () => _updateNote(index),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => _deleteNote(index),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }
+            },
+          )),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addNote,
-        child: const Icon(Icons.add),
+      floatingActionButton: SizedBox(
+        height: 48.0,
+        width: 48.0,
+        child: FloatingActionButton(
+          onPressed: _addNote,
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
