@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:quick_notes_app/Util/note_class.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
@@ -10,20 +13,38 @@ class NotesPage extends StatefulWidget {
 }
 
 class _NotesPageState extends State<NotesPage> {
-  List<String> _notes = [];
+  List<Note> _notes = [];
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
 
   Future<void> _loadNotes() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _notes = prefs.getStringList('notes') ?? [];
+      _notes = (prefs.getStringList('notes') ?? [])
+          .map((note) {
+            final noteData = jsonDecode(note) as Map<String, dynamic>;
+            return Note(
+              title: noteData['title'],
+              content: noteData['content'],
+              timestamp: DateTime.parse(noteData['timestamp']),
+            );
+          })
+          .toList()
+          .cast<Note>();
     });
   }
 
   Future<void> _saveNotes() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setStringList('notes', _notes);
+    prefs.setStringList(
+        'notes',
+        _notes.map((note) {
+          return jsonEncode({
+            'title': note.title,
+            'content': note.content,
+            'timestamp': note.timestamp.toIso8601String(),
+          });
+        }).toList());
   }
 
   void _deleteNote(int index) {
@@ -102,21 +123,21 @@ class _NotesPageState extends State<NotesPage> {
   void _addNote() {
     _showNoteDialog('New Note', (String title, String content) {
       setState(() {
-        _notes.add('$title\n$content');
+        _notes.add(
+            Note(title: title, content: content, timestamp: DateTime.now()));
         _saveNotes();
       });
     });
   }
 
   void _updateNote(int index) {
-    // Split the note into title and content
-    List<String> noteParts = _notes[index].split('\n');
-    _titleController.text = noteParts[0];
-    _contentController.text = noteParts.length > 1 ? noteParts[1] : '';
+    _titleController.text = _notes[index].title;
+    _contentController.text = _notes[index].content;
 
     _showNoteDialog('Update Note', (String title, String content) {
       setState(() {
-        _notes[index] = '$title\n$content';
+        _notes[index] =
+            Note(title: title, content: content, timestamp: DateTime.now());
         _saveNotes();
       });
     });
@@ -129,10 +150,19 @@ class _NotesPageState extends State<NotesPage> {
         itemCount: _notes.length,
         itemBuilder: (context, index) {
           return ListTile(
-            title: Text(_notes[index]),
+            title: Text(_notes[index].title),
+            subtitle: Text(_notes[index].content),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
+                Container(
+                  margin: const EdgeInsets.only(
+                      right: 10.0), // Adjust the value as needed
+                  child: Text(
+                    'Last updated: ${DateFormat('yyyy-MM-dd – kk:mm').format(_notes[index].timestamp)}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.edit),
                   onPressed: () => _updateNote(index),
