@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quick_notes_app/Util/note_class.dart'; // Import NoteProvider
 import 'package:intl/intl.dart';
+import 'dart:math' as math;
 
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
@@ -9,15 +10,27 @@ class NotesPage extends StatefulWidget {
   _NotesPageState createState() => _NotesPageState();
 }
 
-class _NotesPageState extends State<NotesPage> {
+class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMixin {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   String _searchQuery = '';
+  ValueNotifier<bool> _isHovering = ValueNotifier<bool>(false);
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+  }
 
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -100,9 +113,28 @@ class _NotesPageState extends State<NotesPage> {
           )),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addNote,
-        child: const Icon(Icons.add),
+      floatingActionButton: MouseRegion(
+        onEnter: (_) {
+          _isHovering.value = true;
+          _controller.forward();
+        },
+        onExit: (_) {
+          _isHovering.value = false;
+          _controller.reverse();
+        },
+        child: FloatingActionButton(
+          onPressed: _addNote,
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (_, child) {
+              return Transform.rotate(
+                angle: _controller.value * math.pi,
+                child: child,
+              );
+            },
+            child: const Icon(Icons.add),
+          ),
+        ),
       ),
     );
   }
