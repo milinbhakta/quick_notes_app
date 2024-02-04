@@ -69,9 +69,9 @@ class NoteProvider {
         .toList()
         .cast<Note>();
 
-    if (prefs.getStringList('notes')!.isEmpty && !isNotesDeleted) {
+    if ((prefs.getStringList('notes') ?? []).isEmpty && !isNotesDeleted) {
       _notes = List<Note>.generate(
-        20,
+        5,
         (i) => Note(
           title: 'Sample Note ${i + 1}',
           content: 'This is sample note number ${i + 1}.',
