@@ -120,35 +120,37 @@ class _NotesPageState extends State<NotesPage> {
     return ListView.builder(
       itemCount: notes.length,
       itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(notes[index].title),
-          subtitle: Text(notes[index].content),
-          trailing: _searchQuery.isEmpty
-              ? Row(
-                  mainAxisSize: MainAxisSize.min,
+        return Card(
+            elevation: 2,
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: ListTile(
+                title: Text(notes[index].title),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Container(
-                      margin: const EdgeInsets.only(right: 10.0),
-                      child: Text(
-                        'Last updated: ${DateFormat('yyyy-MM-dd – kk:mm').format(notes[index].timestamp)}',
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => _updateNote(index),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () => _deleteNote(index),
+                    Text(notes[index].content),
+                    Text(
+                      'Last updated: ${DateFormat('yyyy-MM-dd – kk:mm').format(notes[index].timestamp)}',
+                      style: const TextStyle(
+                          fontStyle: FontStyle.italic, fontSize: 10),
                     ),
                   ],
-                )
-              : Text(
-                  'Last updated: ${DateFormat('yyyy-MM-dd – kk:mm').format(notes[index].timestamp)}',
-                  style: const TextStyle(fontSize: 12),
                 ),
-        );
+                trailing: _searchQuery.isEmpty
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () => _updateNote(index),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => _deleteNote(index),
+                          ),
+                        ],
+                      )
+                    : null));
       },
     );
   }
