@@ -10,7 +10,8 @@ class NotesPage extends StatefulWidget {
   _NotesPageState createState() => _NotesPageState();
 }
 
-class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMixin {
+class _NotesPageState extends State<NotesPage>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   String _searchQuery = '';
@@ -94,9 +95,13 @@ class _NotesPageState extends State<NotesPage> with SingleTickerProviderStateMix
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               onChanged: _updateSearchQuery,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: "Search",
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25.0),
+                ),
+                filled: true,
               ),
             ),
           ),
