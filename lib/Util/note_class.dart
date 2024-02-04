@@ -22,6 +22,9 @@ class NoteProvider {
   // List of notes.
   List<Note> _notes = [];
 
+  // isNotesdeleted
+  bool isNotesDeleted = false;
+
   // Getter for notes.
   List<Note> get notes => _notes;
 
@@ -36,6 +39,7 @@ class NoteProvider {
     if (index < _notes.length) {
       _notes.removeAt(index);
       saveNotes();
+      isNotesDeleted = true;
     }
   }
 
@@ -65,7 +69,7 @@ class NoteProvider {
         .toList()
         .cast<Note>();
 
-    if (_notes.isEmpty) {
+    if (prefs.getStringList('notes')!.isEmpty && !isNotesDeleted) {
       _notes = List<Note>.generate(
         20,
         (i) => Note(
