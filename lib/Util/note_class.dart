@@ -22,9 +22,6 @@ class NoteProvider {
   // List of notes.
   List<Note> _notes = [];
 
-  // List of filtered notes.
-  List<Note> _filteredNotes = [];
-
   // Getter for notes.
   List<Note> get notes => _notes;
 
@@ -36,8 +33,10 @@ class NoteProvider {
 
   // Remove a note.
   void removeNote(int index) {
-    _notes.removeAt(index);
-    saveNotes();
+    if (index < _notes.length) {
+      _notes.removeAt(index);
+      saveNotes();
+    }
   }
 
   // Update a note.
@@ -49,16 +48,6 @@ class NoteProvider {
   // Initialize the NoteProvider.
   void init() async {
     await loadNotes();
-  }
-
-  // filter notes
-  List<Note> filterNotes(String query) {
-    _filteredNotes = _notes
-        .where((note) =>
-            note.title.toLowerCase().contains(query.toLowerCase()) ||
-            note.content.toLowerCase().contains(query.toLowerCase()))
-        .toList();
-    return _filteredNotes;
   }
 
   // Load notes from SharedPreferences.
@@ -77,15 +66,15 @@ class NoteProvider {
         .cast<Note>();
 
     if (_notes.isEmpty) {
-      for (int i = 1; i <= 15; i++) {
-        addNote(
-          Note(
-            title: 'Sample Note $i',
-            content: 'This is sample note number $i.',
-            timestamp: DateTime.now(),
-          ),
-        );
-      }
+      _notes = List<Note>.generate(
+        20,
+        (i) => Note(
+          title: 'Sample Note ${i + 1}',
+          content: 'This is sample note number ${i + 1}.',
+          timestamp: DateTime.now(),
+        ),
+      );
+      saveNotes();
     }
   }
 

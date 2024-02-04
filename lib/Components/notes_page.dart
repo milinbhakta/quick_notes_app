@@ -10,10 +10,9 @@ class NotesPage extends StatefulWidget {
 }
 
 class _NotesPageState extends State<NotesPage> {
-  final _titleController = TextEditingController();
-  final _contentController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _contentController = TextEditingController();
   String _searchQuery = '';
-  List<Note> _filteredNotes = [];
 
   @override
   void dispose() {
@@ -22,75 +21,25 @@ class _NotesPageState extends State<NotesPage> {
     super.dispose();
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _initializeNotes();
-  }
-
-  void _initializeNotes() async {
-    await NoteProvider.instance.loadNotes();
-    setState(() {
-      _filteredNotes = NoteProvider.instance.notes;
-    });
-  }
-
   void _updateSearchQuery(String newQuery) {
     setState(() {
       _searchQuery = newQuery;
-      _filteredNotes = NoteProvider.instance.filterNotes(_searchQuery);
     });
   }
 
-  void _showNoteDialog(String title, Function(String, String) onSave) {
-    if (title == 'New Note') {
+  void _showNoteDialog(String dialogTitle, Function(String, String) onSave) {
+    if (dialogTitle == 'New Note') {
       _titleController.clear();
       _contentController.clear();
     }
     showDialog(
       context: context,
-      builder: (context) {
-        return Dialog(
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
-            height: MediaQuery.of(context).size.height * 0.5,
-            child: AlertDialog(
-              title: Text(title),
-              content: SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.7,
-                      child: TextField(
-                        controller: _titleController,
-                        decoration: const InputDecoration(hintText: 'Title'),
-                      ),
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.7,
-                      child: TextField(
-                        controller: _contentController,
-                        decoration: const InputDecoration(hintText: 'Content'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: <Widget>[
-                ElevatedButton(
-                  child: const Text('Save'),
-                  onPressed: () {
-                    String title = _titleController.text;
-                    String content = _contentController.text;
-                    _titleController.clear();
-                    _contentController.clear();
-                    onSave(title, content);
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            ),
-          ),
+      builder: (BuildContext context) {
+        return _NoteDialog(
+          dialogTitle: dialogTitle,
+          titleController: _titleController,
+          contentController: _contentController,
+          onSave: onSave,
         );
       },
     );
@@ -99,36 +48,27 @@ class _NotesPageState extends State<NotesPage> {
   void _addNote() {
     _showNoteDialog('New Note', (String title, String content) {
       setState(() {
-        NoteProvider.instance.addNote(Note(
-            title: title,
-            content: content,
-            timestamp: DateTime.now())); 
+        NoteProvider.instance.addNote(
+            Note(title: title, content: content, timestamp: DateTime.now()));
       });
     });
   }
 
   void _updateNote(int index) {
-    _titleController.text = NoteProvider
-        .instance.notes[index].title; // Use NoteProvider to get note
-    _contentController.text = NoteProvider
-        .instance.notes[index].content; // Use NoteProvider to get note
+    _titleController.text = NoteProvider.instance.notes[index].title;
+    _contentController.text = NoteProvider.instance.notes[index].content;
 
     _showNoteDialog('Update Note', (String title, String content) {
       setState(() {
-        NoteProvider.instance.updateNote(
-            index,
-            Note(
-                title: title,
-                content: content,
-                timestamp: DateTime.now())); // Use NoteProvider to update note
+        NoteProvider.instance.updateNote(index,
+            Note(title: title, content: content, timestamp: DateTime.now()));
       });
     });
   }
 
   void _deleteNote(int index) {
     setState(() {
-      NoteProvider.instance
-          .removeNote(index); // Use NoteProvider to delete note
+      NoteProvider.instance.removeNote(index);
     });
   }
 
@@ -154,48 +94,111 @@ class _NotesPageState extends State<NotesPage> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               } else {
-                return ListView.builder(
-                  itemCount: _filteredNotes.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Text(_filteredNotes[index].title),
-                      subtitle: Text(_filteredNotes[index].content),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Container(
-                            margin: const EdgeInsets.only(right: 10.0),
-                            child: Text(
-                              'Last updated: ${DateFormat('yyyy-MM-dd – kk:mm').format(_filteredNotes[index].timestamp)}',
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _updateNote(index),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () => _deleteNote(index),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
+                return _buildNotesList();
               }
             },
           )),
         ],
       ),
-      floatingActionButton: SizedBox(
-        height: 48.0,
-        width: 48.0,
-        child: FloatingActionButton(
-          onPressed: _addNote,
-          child: const Icon(Icons.add),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addNote,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildNotesList() {
+    List<Note> notes = _searchQuery.isEmpty
+        ? NoteProvider.instance.notes
+        : NoteProvider.instance.notes.where((note) {
+            return note.title
+                    .toLowerCase()
+                    .contains(_searchQuery.toLowerCase()) ||
+                note.content.toLowerCase().contains(_searchQuery.toLowerCase());
+          }).toList();
+
+    return ListView.builder(
+      itemCount: notes.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(notes[index].title),
+          subtitle: Text(notes[index].content),
+          trailing: _searchQuery.isEmpty
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Container(
+                      margin: const EdgeInsets.only(right: 10.0),
+                      child: Text(
+                        'Last updated: ${DateFormat('yyyy-MM-dd – kk:mm').format(notes[index].timestamp)}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () => _updateNote(index),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () => _deleteNote(index),
+                    ),
+                  ],
+                )
+              : Text(
+                  'Last updated: ${DateFormat('yyyy-MM-dd – kk:mm').format(notes[index].timestamp)}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+        );
+      },
+    );
+  }
+}
+
+class _NoteDialog extends StatelessWidget {
+  final String dialogTitle;
+  final TextEditingController titleController;
+  final TextEditingController contentController;
+  final Function(String, String) onSave;
+
+  const _NoteDialog({
+    Key? key,
+    required this.dialogTitle,
+    required this.titleController,
+    required this.contentController,
+    required this.onSave,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(dialogTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(hintText: 'Title'),
+            ),
+            TextField(
+              controller: contentController,
+              decoration: const InputDecoration(hintText: 'Content'),
+            ),
+          ],
         ),
       ),
+      actions: <Widget>[
+        TextButton(
+          child: const Text('Save'),
+          onPressed: () {
+            String title = titleController.text;
+            String content = contentController.text;
+            titleController.clear();
+            contentController.clear();
+            onSave(title, content);
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
     );
   }
 }
