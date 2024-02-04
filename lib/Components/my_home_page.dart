@@ -37,14 +37,27 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        shadowColor: Theme.of(context).colorScheme.shadow,
-        surfaceTintColor: Theme.of(context).colorScheme.surface,
         title: Container(
           alignment: Alignment.centerLeft,
           child: Text(
             widget.title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onPrimary,
+              fontWeight: FontWeight.bold,
+              fontSize: 24.0,
+            ),
+          ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: <Color>[
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.secondary,
+              ],
+            ),
           ),
         ),
         elevation: 8.0,
