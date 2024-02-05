@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quick_notes_app/Util/note_class.dart';
 import 'my_home_page.dart';
 
 class MyApp extends StatefulWidget {
@@ -21,6 +22,9 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    _themeMode = ThemeUtils.useLightMode(_themeMode, context)
+        ? ThemeMode.light
+        : ThemeMode.dark;
     return MaterialApp(
       title: 'Quick Notes App',
       debugShowCheckedModeBanner: false,
@@ -28,9 +32,10 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData.light(useMaterial3: true),
       darkTheme: ThemeData.dark(useMaterial3: true),
       home: MyHomePage(
-          title: 'Quick Notes App',
-          changeTheme: _changeTheme,
-          currentTheme: currentTheme),
+        title: 'Quick Notes App',
+        changeTheme: _changeTheme,
+        currentTheme: currentTheme,
+      ),
     );
   }
 }

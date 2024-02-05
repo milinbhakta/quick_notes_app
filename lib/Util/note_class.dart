@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Note {
@@ -94,5 +95,19 @@ class NoteProvider {
             'timestamp': note.timestamp.toIso8601String(),
           });
         }).toList());
+  }
+}
+
+class ThemeUtils {
+  static bool useLightMode(ThemeMode _themeMode, BuildContext context) {
+    switch (_themeMode) {
+      case ThemeMode.system:
+        return View.of(context).platformDispatcher.platformBrightness ==
+            Brightness.light;
+      case ThemeMode.light:
+        return true;
+      case ThemeMode.dark:
+        return false;
+    }
   }
 }
