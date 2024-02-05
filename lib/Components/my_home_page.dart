@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quick_notes_app/Components/news_page.dart';
 import 'notes_page.dart';
 import 'settings_page.dart';
 
@@ -31,6 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     final List<Widget> widgetOptions = <Widget>[
       const NotesPage(),
+      const NewsPage(),
       SettingsPage(
           changeTheme: widget.changeTheme, currentTheme: widget.currentTheme),
     ];
@@ -100,6 +102,10 @@ class _MyHomePageState extends State<MyHomePage> {
             BottomNavigationBarItem(
               icon: Icon(Icons.notes),
               label: 'Notes',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.rss_feed),
+              label: 'News',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings),
