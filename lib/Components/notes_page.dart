@@ -226,7 +226,7 @@ class _NoteDialog extends StatelessWidget {
         ),
       ),
       actions: <Widget>[
-        TextButton(
+        FilledButton.tonal(
           child: const Text('Save'),
           onPressed: () {
             String title = titleController.text;
