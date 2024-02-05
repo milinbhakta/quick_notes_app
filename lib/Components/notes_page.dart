@@ -200,12 +200,11 @@ class _NoteDialog extends StatelessWidget {
   final Function(String, String) onSave;
 
   const _NoteDialog({
-    Key? key,
     required this.dialogTitle,
     required this.titleController,
     required this.contentController,
     required this.onSave,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
