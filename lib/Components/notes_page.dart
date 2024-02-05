@@ -210,7 +210,8 @@ class _NoteDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(dialogTitle),
+      title: Text(dialogTitle,
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
       content: SingleChildScrollView(
         child: Column(
           children: <Widget>[
