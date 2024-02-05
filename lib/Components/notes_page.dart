@@ -15,7 +15,7 @@ class _NotesPageState extends State<NotesPage>
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   String _searchQuery = '';
-  ValueNotifier<bool> _isHovering = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _isHovering = ValueNotifier<bool>(false);
   late AnimationController _controller;
 
   @override
