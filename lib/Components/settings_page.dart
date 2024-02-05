@@ -30,7 +30,7 @@ class SettingsPage extends StatelessWidget {
                       applicationIcon: Icon(Icons.notes),
                       applicationName: 'Quick Notes App',
                       applicationVersion: '1.0.0',
-                      applicationLegalese: '© 2021 Quick Notes App');
+                      applicationLegalese: '© 2024 Quick Notes App');
                 });
           },
         ),
