@@ -89,10 +89,13 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
         child: BottomNavigationBar(
-          backgroundColor: Colors.transparent,
+          elevation: 0,
           selectedItemColor: Theme.of(context).colorScheme.onPrimary,
           unselectedItemColor:
-              Theme.of(context).colorScheme.onPrimary.withOpacity(0.6),
+              Theme.of(context).colorScheme.onPrimary.withOpacity(0.5),
+          useLegacyColorScheme: true,
+          enableFeedback: true,
+          backgroundColor: Colors.transparent,
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
               icon: Icon(Icons.notes),
