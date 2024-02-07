@@ -16,8 +16,6 @@ This is a Flutter application that provides news to users. The news is fetched f
 - Comments and Ratings
 - Share News
 - Push Notifications
-- Dark Mode
-- Offline Mode
 - Internationalization
 
 ## Getting Started
