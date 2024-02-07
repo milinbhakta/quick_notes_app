@@ -22,10 +22,3 @@ This is a Flutter application that provides news to users. The news is fetched f
 
 To get started with this project, clone the repository and run `flutter pub get` to fetch the necessary dependencies. Then, run `flutter run` to start the app.
 
-## Contributing
-
-Contributions are welcome! Please read the contributing guidelines before getting started.
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for more details.
